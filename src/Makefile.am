@@ -107,6 +107,9 @@ GDN_WALLET_SRCS = account.cpp \
 GULDEN_CORE_H = \
   $(GDN_INCLUDES) \
   addrman.h \
+  addressindex.h \
+  spentindex.h \
+  timestampindex.h \
   base58.h \
   bloom.h \
   blockencodings.h \
