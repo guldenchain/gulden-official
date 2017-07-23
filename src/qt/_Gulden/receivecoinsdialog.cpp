@@ -262,6 +262,14 @@ void ReceiveCoinsDialog::gotoReceievePage()
 
 void ReceiveCoinsDialog::showBuyGuldenDialog()
 {
+#ifdef WIN32
+    if (WIN32) {
+
+        QDesktopServices::openUrl(QUrl("https://gulden.com/purchase"));
+        return;
+    }
+#endif
+
 #if defined(HAVE_WEBENGINE_VIEW) || defined(HAVE_WEBKIT)
     ui->receiveCoinsStackedWidget->setCurrentIndex(1);
 
@@ -277,7 +285,7 @@ void ReceiveCoinsDialog::showBuyGuldenDialog()
     ui->accountBuyButton->setVisible(true);
 
     QMovie* movie = new QMovie(":/Gulden/loading_animation");
-    if (movie->isValid()) {
+    if (movie && movie->isValid()) {
         ui->loadingAnimationLabel->setVisible(true);
         buyView->setVisible(false);
         movie->setScaledSize(QSize(30, 30));
@@ -286,7 +294,8 @@ void ReceiveCoinsDialog::showBuyGuldenDialog()
     } else {
         ui->loadingAnimationLabel->setVisible(false);
         buyView->setVisible(true);
-        delete movie;
+        if (movie)
+            delete movie;
     }
 
     buyView->load(QUrl("https://gulden.com/purchase"));
@@ -326,8 +335,10 @@ void ReceiveCoinsDialog::generateRequest()
 
     CReserveKey reservekey(pwalletMain, model->getActiveAccount(), KEYCHAIN_EXTERNAL);
     CPubKey vchPubKey;
-    if (!reservekey.GetReservedKey(vchPubKey))
+    if (!reservekey.GetReservedKey(vchPubKey)) {
+
         return;
+    }
     reservekey.KeepKey();
 
     ui->receiveCoinsStackedWidget->setCurrentIndex(3);
@@ -423,10 +434,15 @@ void ReceiveCoinsDialog::loadBuyViewFinished(bool bOk)
 
         buyReceiveAddress = new CReserveKey(pwalletMain, currentAccount, KEYCHAIN_EXTERNAL);
         CPubKey pubKey;
-        buyReceiveAddress->GetReservedKey(pubKey);
-        CKeyID keyID = pubKey.GetID();
+        QString guldenAddress;
 
-        QString guldenAddress = QString::fromStdString(CBitcoinAddress(keyID).ToString());
+        if (!buyReceiveAddress->GetReservedKey(pubKey)) {
+
+            guldenAddress = "error";
+        } else {
+            CKeyID keyID = pubKey.GetID();
+            guldenAddress = QString::fromStdString(CBitcoinAddress(keyID).ToString());
+        }
 
         QString emailAddress = QString("");
         QString paymentMethod = QString("");
