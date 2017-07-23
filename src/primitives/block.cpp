@@ -19,6 +19,9 @@
 
 uint256 CBlockHeader::GetHash() const
 {
+    //if (!cachedHash.IsNull())
+    //return cachedHash;
+
     return SerializeHash(*this);
 }
 
@@ -42,6 +45,7 @@ std::string CBlock::ToString() const
 
 uint256 CBlock::GetPoWHash() const
 {
+
     arith_uint256 thash;
 
     if (GetBoolArg("-testnetaccel", false)) {
@@ -50,6 +54,7 @@ uint256 CBlock::GetPoWHash() const
         char scratchpad[SCRYPT_SCRATCHPAD_SIZE];
         scrypt_1024_1_1_256_sp(BEGIN(nVersion), BEGIN(thash), scratchpad);
     }
+
     return ArithToUint256(thash);
 }
 
